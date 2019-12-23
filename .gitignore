@@ -112,3 +112,4 @@ releases/*
 tmp/*
 
 # Project related
+auth_keys.py
