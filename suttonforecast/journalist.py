@@ -2,7 +2,8 @@
 ## Gets the information
 from urllib.request import urlopen as uReq
 from bs4 import BeautifulSoup
-import os.path
+from PIL import Image, ImageFilter
+from io import BytesIO
 
 class Journalist:
     def __init__(self):
@@ -46,7 +47,7 @@ class Journalist:
         self.data["chalets"]["ouvert"], self.data["chalets"]["index"] = soup.find_all("div", attrs={"class":"icon_block"})[1].h3.text.strip().split("/")
         
         self.data["conditions"]["surface"], self.data["conditions"]["base"], self.data["conditions"]["couverture"] = [info.text.strip() for info in soup.find("div", attrs={"class":"surface"}).findAll("p")]
-        self.data["conditions"]["message"] = soup.find("div", attrs={"class":"_1aa6"}).find("div", attrs={"class":""}).text.strip().replace(u"\xa0","").replace("\n","")
+        self.data["conditions"]["message"] = soup.find("div", attrs={"class":"_1aa6"}).find("div", attrs={"class":""}).text.strip().replace(u"\xa0","").replace("\n"," ")
 
     def processStatut(self, soup):
         for i, table in enumerate(soup.find_all("table")):
@@ -71,3 +72,18 @@ class Journalist:
                         dictionnary["statut"]["ouvert"].append(table_row.find_all("td")[0].text.strip())
                     else:
                         dictionnary["statut"]["ferme"].append(table_row.find_all("td")[0].text.strip())
+    def getWebcamImages():
+        webcam_images = [Image.open(BytesIO(uReq(url).read())) for url in [
+            "https://ecom.montsutton.com/netcam/netcam.jpg",
+            "https://ecom.montsutton.com/netcam/netcam840.jpg"]]
+
+        widths, heights = zip(*(web_img.size for web_img in webcam_images))
+        width_of_new_image = min(widths)
+        height_of_new_image = sum(heights)
+
+        webcams_image = Image.new("RGB", (width_of_new_image, height_of_new_image))
+        new_pos = 0
+        for web_img in webcam_images:
+            webcams_image.paste(web_img, (0, new_pos))
+            new_pos += web_img.size[1]
+        return webcams_image
