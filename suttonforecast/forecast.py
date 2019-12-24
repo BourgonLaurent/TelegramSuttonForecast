@@ -90,14 +90,5 @@ class Forecast:
         self.towncrier.show(channelid, self.webcams_bytes)
         self.showInlineKeyboard(channelid)
 
-    def askJournalist(self, update, context):
-        print("hi")
-        print(update, context)
-        # context.bot.send_message(chat_id=update.effective_chat.id, text=self.data["info_time"])
-        self.towncrier.tell(update, context, self.journalist.data["info-time"])
-    
-    def tellTowncrier(self, data):
-        self.towncrier.tell(data)
-
     def addCommand(self, keyword, function):
         self.dispatcher.add_handler(CommandHandler(keyword, function))

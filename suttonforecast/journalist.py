@@ -72,7 +72,7 @@ class Journalist:
                         dictionnary["statut"]["ouvert"].append(table_row.find_all("td")[0].text.strip())
                     else:
                         dictionnary["statut"]["ferme"].append(table_row.find_all("td")[0].text.strip())
-    def getWebcamImages():
+    def getWebcamImages():  # pylint: disable=no-method-argument
         # Get the images
         webcam_images = [Image.open(BytesIO(uReq(url).read())) for url in [
             "https://ecom.montsutton.com/netcam/netcam.jpg",
