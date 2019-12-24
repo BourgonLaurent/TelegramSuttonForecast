@@ -73,17 +73,23 @@ class Journalist:
                     else:
                         dictionnary["statut"]["ferme"].append(table_row.find_all("td")[0].text.strip())
     def getWebcamImages():
+        # Get the images
         webcam_images = [Image.open(BytesIO(uReq(url).read())) for url in [
             "https://ecom.montsutton.com/netcam/netcam.jpg",
             "https://ecom.montsutton.com/netcam/netcam840.jpg"]]
-
+        # Find the new dimensions
         widths, heights = zip(*(web_img.size for web_img in webcam_images))
         width_of_new_image = min(widths)
         height_of_new_image = sum(heights)
-
+        # Create the new image
         webcams_image = Image.new("RGB", (width_of_new_image, height_of_new_image))
         new_pos = 0
         for web_img in webcam_images:
             webcams_image.paste(web_img, (0, new_pos))
             new_pos += web_img.size[1]
-        return webcams_image
+        # Prepare image for Telegram
+        webcam_bytes = BytesIO()
+        webcam_bytes.name = "webcams.jpg"
+        webcams_image.save(webcam_bytes, "JPEG")
+        webcam_bytes.seek(0)
+        return webcam_bytes

@@ -8,12 +8,6 @@ class Towncrier:
         self.updater = updater
         self.dispatcher = dispatcher
         self.addCommand = addCommand
-        self.setKeyWords()
-
-    def setKeyWords(self):
-        def start(update, context):
-            context.bot.send_message(chat_id=update.effective_chat.id, text="Stating....!")
-        self.addCommand("start", start)
     
     def tell(self, chatid, data):
         self.dispatcher.bot.send_message(chat_id=chatid, text=data, parse_mode="Markdown")
