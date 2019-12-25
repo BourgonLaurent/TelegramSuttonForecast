@@ -15,6 +15,8 @@ from os import environ
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
 
+VERSION = "1.1.1"
+
 class Forecast:
     def __init__(self, BOT_KEY, CHANNEL_ID, ADMIN_ID, TIME_HOUR, TIME_MIN):
         self.BOT_KEY = BOT_KEY
@@ -38,9 +40,13 @@ class Forecast:
         self.addCommand("start", start)
         
         def help_needed(update, context):
-            pass
+            self.towncrier.tell(chatid=update.effective_chat.id, data="/dme: Envoie le Rapport Quotidien en privé\n/forcedme: /dme mais au Channel (ADMIN seulement)\n/version: Version actuelle")
         self.addCommand("help", help_needed)
         
+        def version(update, context):
+            self.towncrier.tell(chatid=update.effective_chat.id, data=f"Version {VERSION}")
+        self.addCommand("version", version)
+
 
         self.info_keyboard = [[InlineKeyboardButton("Liste des chalets", callback_data='chalet'),
                                 InlineKeyboardButton("Liste des remontées", callback_data='remontee')],
