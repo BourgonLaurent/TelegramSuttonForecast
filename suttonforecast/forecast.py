@@ -3,6 +3,7 @@
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, Filters, MessageHandler, CallbackQueryHandler
 
+from . import __version__
 from .journalist import Journalist
 from .towncrier import Towncrier
 from .designer import Designer
@@ -42,7 +43,7 @@ class Forecast:
         self.addCommand("help", help_needed)
         
         def version(update, context):
-            self.towncrier.tell(chatid=update.effective_chat.id, data=f"Version {VERSION}")
+            self.towncrier.tell(chatid=update.effective_chat.id, data=f"Version {__version__}")
         self.addCommand("version", version)
 
 
