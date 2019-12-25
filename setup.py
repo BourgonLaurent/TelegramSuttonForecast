@@ -1,11 +1,12 @@
 import setuptools
+from suttonforecast.forecast import VERSION
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
     name="suttonforecast-bourgonlaurent", # Replace with your own username
-    version="1.1.0",
+    version=VERSION,
     author="Laurent Bourgon",
     description="A small example package",
     long_description=long_description,
