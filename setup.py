@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="suttonforecast-bourgonlaurent", # Replace with your own username
-    version="1.0.1",
+    version="1.1.0",
     author="Laurent Bourgon",
     description="A small example package",
     long_description=long_description,

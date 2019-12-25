@@ -3,9 +3,9 @@
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, Filters, MessageHandler, CallbackQueryHandler
 
-from .journalist import *
-from .towncrier import *
-from .designer import *
+from .journalist import Journalist
+from .towncrier import Towncrier
+from .designer import Designer
 
 from io import BytesIO
 import logging
@@ -16,10 +16,14 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
                     level=logging.INFO)
 
 class Forecast:
-    def __init__(self, BOT_KEY, CHANNEL_ID, ADMIN_ID):
+    def __init__(self, BOT_KEY, CHANNEL_ID, ADMIN_ID, TIME_HOUR, TIME_MIN):
         self.BOT_KEY = BOT_KEY
         self.CHANNEL_ID = CHANNEL_ID
         self.ADMIN_ID = ADMIN_ID
+        self.TIME = {
+            "hours":int(TIME_HOUR),
+            "minutes":int(TIME_MIN)
+        }
 
         self.updater = Updater(token=self.BOT_KEY, use_context=True)
         self.dispatcher = self.updater.dispatcher
@@ -66,7 +70,7 @@ class Forecast:
 
         def automaticDailyMessage(context):
             self.sendDailyMessage(self.CHANNEL_ID)
-        self.jobqueue.run_daily(automaticDailyMessage, time(hour=6, minute=45))
+        self.jobqueue.run_daily(automaticDailyMessage, time(hour=self.TIME["hours"], minute=self.TIME["minutes"]))
 
 
         def error(update, context):
