@@ -15,8 +15,6 @@ from os import environ
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
 
-VERSION = "1.1.1"
-
 class Forecast:
     def __init__(self, BOT_KEY, CHANNEL_ID, ADMIN_ID, TIME_HOUR, TIME_MIN):
         self.BOT_KEY = BOT_KEY

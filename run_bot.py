@@ -1,4 +1,3 @@
-
 from suttonforecast import forecast
 from os import environ
 
