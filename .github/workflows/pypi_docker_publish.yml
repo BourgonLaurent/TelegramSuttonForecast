@@ -26,6 +26,7 @@ jobs:
         python setup.py sdist bdist_wheel
         twine upload dist/*
   build:
+    needs: [deploy]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
