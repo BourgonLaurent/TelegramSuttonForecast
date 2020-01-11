@@ -67,11 +67,9 @@ class Forecast:
                 data = Designer().statutMessage(self.data, query.data)
                 query.edit_message_text(text=data, reply_markup=self.info_keyboard_markup, parse_mode="Markdown")
             elif any(c in query.data for c in ("refresh_webcam")):
-                print(context)
-                print(query)
-                webcam_bytes = Journalist.getWebcamImages()
-                webcam_tele = InputMediaPhoto(webcam_bytes)
-                query.edit_message_media(media=webcam_tele, reply_markup=self.webcam_keyboard_markup)
+                webcam_telegram = InputMediaPhoto(Journalist.getWebcamImages())
+                context.bot.edit_message_media(chat_id=query.message.chat.id, message_id=query.message.message_id,
+                                            media=webcam_telegram, reply_markup=self.webcam_keyboard_markup)
         self.dispatcher.add_handler(CallbackQueryHandler(markup_callback_reply))
 
 
