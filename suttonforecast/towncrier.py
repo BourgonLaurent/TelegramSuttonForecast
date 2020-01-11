@@ -12,5 +12,5 @@ class Towncrier:
     def tell(self, chatid, data):
         self.dispatcher.bot.send_message(chat_id=chatid, text=data, parse_mode="Markdown")
     
-    def show(self, chatid, data):
-        self.dispatcher.bot.send_photo(chatid, photo=data)
+    def show(self, chatid, data, keyboard_markup):
+        self.dispatcher.bot.send_photo(chatid, photo=data, reply_markup=keyboard_markup)

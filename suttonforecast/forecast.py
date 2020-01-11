@@ -1,6 +1,6 @@
 # Forecast Bot
 ## Director of the whole process, everything goes by him
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, InputMediaPhoto
 from telegram.ext import Updater, CommandHandler, Filters, MessageHandler, CallbackQueryHandler
 
 from . import __version__
@@ -39,7 +39,13 @@ class Forecast:
         self.addCommand("start", start)
         
         def help_needed(update, context):
-            self.towncrier.tell(chatid=update.effective_chat.id, data="/dme: Envoie le Rapport Quotidien en privé\n/forcedme: /dme mais au Channel (ADMIN seulement)\n/version: Version actuelle")
+            help_message = """
+/dme: Envoie le Rapport Quotidien en privé
+/forcedme: /dme mais au Channel (ADMIN seulement)
+/webcam: Envoie le collage des deux webcams
+/version: Version actuelle
+            """
+            self.towncrier.tell(chatid=update.effective_chat.id, data=help_message)
         self.addCommand("help", help_needed)
         
         def version(update, context):
@@ -51,12 +57,22 @@ class Forecast:
                                 InlineKeyboardButton("Liste des remontées", callback_data='remontee')],
                             [InlineKeyboardButton("Liste des pistes", callback_data='piste')]]
         self.info_keyboard_markup = InlineKeyboardMarkup(self.info_keyboard)
-
-        def button(update, context):
+        
+        self.webcam_keyboard = [[InlineKeyboardButton("Rafraîchir", callback_data="refresh_webcam")]]
+        self.webcam_keyboard_markup = InlineKeyboardMarkup(self.webcam_keyboard)
+        
+        def markup_callback_reply(update, context):
             query = update.callback_query
-            data = Designer().statutMessage(self.data, query.data)
-            query.edit_message_text(text=data, reply_markup=self.info_keyboard_markup, parse_mode="Markdown")
-        self.dispatcher.add_handler(CallbackQueryHandler(button))
+            if any(c in query.data for c in ("chalet", "remontee", "piste")):
+                data = Designer().statutMessage(self.data, query.data)
+                query.edit_message_text(text=data, reply_markup=self.info_keyboard_markup, parse_mode="Markdown")
+            elif any(c in query.data for c in ("refresh_webcam")):
+                print(context)
+                print(query)
+                webcam_bytes = Journalist.getWebcamImages()
+                webcam_tele = InputMediaPhoto(webcam_bytes)
+                query.edit_message_media(media=webcam_tele, reply_markup=self.webcam_keyboard_markup)
+        self.dispatcher.add_handler(CallbackQueryHandler(markup_callback_reply))
 
 
         def dme(update, context):
@@ -67,12 +83,12 @@ class Forecast:
             self.sendDailyMessage(self.CHANNEL_ID)
             self.towncrier.tell(self.ADMIN_ID, "Le Rapport Quotidien a été envoyé au groupe.")
         self.dispatcher.add_handler(CommandHandler("forcedme", forcedme, filters=Filters.user(user_id=int(self.ADMIN_ID))))
-
-        def sendWebcams(update, context):
-            self.webcams_bytes = Journalist.getWebcamImages()
-            self.towncrier.show(update.effective_chat.id, self.webcams_bytes)
-        self.addCommand("webcam", sendWebcams)
-
+        
+        
+        def webcams(update, context):
+            self.sendWebcams(update.effective_chat.id)
+        self.addCommand("webcam", webcams)
+        
         def automaticDailyMessage(context):
             self.sendDailyMessage(self.CHANNEL_ID)
         self.jobqueue.run_daily(automaticDailyMessage, time(hour=self.TIME["hours"], minute=self.TIME["minutes"]))
@@ -90,9 +106,13 @@ class Forecast:
         self.updater.start_polling()
         self.updater.idle()
     
-    def showInlineKeyboard(self, chatid):
+    def showMenuInlineKeyboard(self, chatid):
         self.dispatcher.bot.send_message(chat_id=chatid, text="Souhaitez-vous d'autres informations?", reply_markup=self.info_keyboard_markup)
-
+    
+    def sendWebcams(self, channelid):
+        webcam_bytes = Journalist.getWebcamImages()
+        self.towncrier.show(channelid, webcam_bytes, self.webcam_keyboard_markup)
+        
     def sendDailyMessage(self, channelid):
         # Scrape info
         self.data = Journalist().data
@@ -102,9 +122,8 @@ class Forecast:
         for m in data_designed:
             self.towncrier.tell(channelid, m)
         # Get the combined webcam images in BytesIO
-        self.webcams_bytes = Journalist.getWebcamImages()
-        self.towncrier.show(channelid, self.webcams_bytes)
-        self.showInlineKeyboard(channelid)
+        self.sendWebcams(channelid)
+        self.showMenuInlineKeyboard(channelid)
 
     def addCommand(self, keyword, function):
         self.dispatcher.add_handler(CommandHandler(keyword, function))
