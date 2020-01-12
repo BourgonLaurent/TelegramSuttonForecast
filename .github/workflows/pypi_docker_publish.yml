@@ -29,10 +29,10 @@ jobs:
     needs: [deploy]
     runs-on: ubuntu-latest
     steps:
-    - name: Sleep for 1 minute
+    - name: Sleep for 30 seconds
       uses: jakejarvis/wait-action@master
       with:
-        time: '1m'
+        time: '30s'
   build:
     needs: [wait]
     runs-on: ubuntu-latest
