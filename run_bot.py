@@ -8,7 +8,7 @@ if __name__ == "__main__":
         BOT_HTTP = environ["SUT_BOT"]
         CHANNEL_ID = environ["SUT_CHANNEL"]
         ADMIN_ID = environ["SUT_ADMIN"]
-        TIME_DAYS = tuple(environ["SUT_TIME_DAYS"])
+        TIME_DAYS = tuple([int(char) for char in environ["SUT_TIME_DAYS"]])
         TIME_HOUR = environ["SUT_TIME_HOUR"]
         TIME_MIN = environ["SUT_TIME_MIN"]
         
