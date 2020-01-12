@@ -17,13 +17,15 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
                     level=logging.INFO)
 
 class Forecast:
-    def __init__(self, BOT_KEY, CHANNEL_ID, ADMIN_ID, TIME_HOUR, TIME_MIN):
+    def __init__(self, BOT_KEY, CHANNEL_ID, ADMIN_ID,
+                    TIME_DAYS, TIME_HOUR, TIME_MIN):
         self.BOT_KEY = BOT_KEY
         self.CHANNEL_ID = CHANNEL_ID
         self.ADMIN_ID = ADMIN_ID
         self.TIME = {
-            "hours":int(TIME_HOUR),
-            "minutes":int(TIME_MIN)
+            "days" : tuple(TIME_DAYS),
+            "hours" : int(TIME_HOUR),
+            "minutes" : int(TIME_MIN)
         }
 
         self.updater = Updater(token=self.BOT_KEY, use_context=True)
@@ -39,12 +41,12 @@ class Forecast:
         self.addCommand("start", start)
         
         def help_needed(update, context):
-            help_message = """
-/dme: Envoie le Rapport Quotidien en privé
-/forcedme: /dme mais au Channel (ADMIN seulement)
-/webcam: Envoie le collage des deux webcams
-/version: Version actuelle
-            """
+            help_message = "\n".join([
+                "/dme: Envoie le Rapport Quotidien en privé",
+                "/forcedme: /dme mais au Channel (ADMIN seulement)",
+                "/webcam: Envoie le collage des deux webcams",
+                "/version: Version actuelle"
+            ])
             self.towncrier.tell(chatid=update.effective_chat.id, data=help_message)
         self.addCommand("help", help_needed)
         
@@ -65,13 +67,21 @@ class Forecast:
             query = update.callback_query
             if any(c in query.data for c in ("chalet", "remontee", "piste")):
                 data = Designer().statutMessage(self.data, query.data)
-                query.edit_message_text(text=data, reply_markup=self.info_keyboard_markup, parse_mode="Markdown")
+                query.edit_message_text(text=data,
+                                    reply_markup=self.info_keyboard_markup,
+                                    parse_mode="Markdown")
+            
             elif any(c in query.data for c in ("refresh_webcam")):
                 webcam_telegram = InputMediaPhoto(Journalist.getWebcamImages())
                 context.bot.edit_message_media(chat_id=query.message.chat.id, message_id=query.message.message_id,
                                             media=webcam_telegram, reply_markup=self.webcam_keyboard_markup)
         self.dispatcher.add_handler(CallbackQueryHandler(markup_callback_reply))
+        
 
+        def webcams(update, context):
+            self.sendWebcams(update.effective_chat.id)
+        self.addCommand("webcam", webcams)
+        
 
         def dme(update, context):
             self.sendDailyMessage(update.effective_chat.id)
@@ -80,16 +90,15 @@ class Forecast:
         def forcedme(update, context):
             self.sendDailyMessage(self.CHANNEL_ID)
             self.towncrier.tell(self.ADMIN_ID, "Le Rapport Quotidien a été envoyé au groupe.")
-        self.dispatcher.add_handler(CommandHandler("forcedme", forcedme, filters=Filters.user(user_id=int(self.ADMIN_ID))))
-        
-        
-        def webcams(update, context):
-            self.sendWebcams(update.effective_chat.id)
-        self.addCommand("webcam", webcams)
-        
+        self.dispatcher.add_handler(CommandHandler("forcedme", forcedme, 
+                                                filters=Filters.user(user_id=int(self.ADMIN_ID))))
+
         def automaticDailyMessage(context):
             self.sendDailyMessage(self.CHANNEL_ID)
-        self.jobqueue.run_daily(automaticDailyMessage, time(hour=self.TIME["hours"], minute=self.TIME["minutes"]))
+        self.jobqueue.run_daily(automaticDailyMessage,
+                            time(hour=self.TIME["hours"],
+                                minute=self.TIME["minutes"]),
+                            days=self.TIME["days"])
 
 
         def error(update, context):
@@ -97,7 +106,8 @@ class Forecast:
         self.dispatcher.add_error_handler(error)
 
         def unknown(update, context):
-            context.bot.send_message(chat_id=update.effective_chat.id, text="Désolé, cette commande n'a pas été reconnue.")
+            context.bot.send_message(chat_id=update.effective_chat.id,
+                                text="Désolé, cette commande n'a pas été reconnue.")
         unknown_handler = MessageHandler(Filters.command, unknown)
         self.dispatcher.add_handler(unknown_handler)
 
@@ -105,7 +115,9 @@ class Forecast:
         self.updater.idle()
     
     def showMenuInlineKeyboard(self, chatid):
-        self.dispatcher.bot.send_message(chat_id=chatid, text="Souhaitez-vous d'autres informations?", reply_markup=self.info_keyboard_markup)
+        self.dispatcher.bot.send_message(chat_id=chatid,
+                                    text="Souhaitez-vous d'autres informations?",
+                                    reply_markup=self.info_keyboard_markup)
     
     def sendWebcams(self, channelid):
         webcam_bytes = Journalist.getWebcamImages()
