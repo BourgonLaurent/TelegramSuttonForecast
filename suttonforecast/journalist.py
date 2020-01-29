@@ -47,7 +47,8 @@ class Journalist:
         self.data["chalets"]["ouvert"], self.data["chalets"]["index"] = soup.find_all("div", attrs={"class":"icon_block"})[1].h3.text.strip().split("/")
         
         self.data["conditions"]["surface"], self.data["conditions"]["base"], self.data["conditions"]["couverture"] = [info.text.strip() for info in soup.find("div", attrs={"class":"surface"}).findAll("p")]
-        self.data["conditions"]["message"] = soup.find("div", attrs={"class":"_1aa6"}).find("div", attrs={"class": "_5w1r _3_om _5wdf"}).text.strip().replace(u"\xa0","").replace("\n"," ")
+        self.data["conditions"]["message"] = soup.find("section", attrs={"class":"sutton-comment"}).find("div", attrs={"class": "_5w1r _3_om _5wdf"}).text.strip().replace(u"\xa0","").replace("\n"," ")
+        print(self.data["conditions"]["message"])
 
     def processStatut(self, soup):
         for i, table in enumerate(soup.find_all("table")):
@@ -93,3 +94,6 @@ class Journalist:
         webcams_image.save(webcam_bytes, "JPEG")
         webcam_bytes.seek(0)
         return webcam_bytes
+
+if __name__ == "__main__":
+    Journalist()
